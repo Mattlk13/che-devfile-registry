@@ -1,13 +1,13 @@
 ---
 apiVersion: 1.0.0
 metadata:
-  generateName: angular-
+  generateName: nodejs-angular-
 projects:
   -
     name: angular-realworld-example-app
     source:
       type: git
-      location: "https://github.com/gothinkster/angular-realworld-example-app"
+      location: "https://github.com/che-samples/nodejs-angular"
 components:
   -
     type: chePlugin
@@ -15,7 +15,7 @@ components:
   -
     type: dockerimage
     alias: nodejs
-    image: quay.io/eclipse/che-nodejs10-community:nightly
+    image: quay.io/eclipse/che-nodejs10-community:next
     memoryLimit: 1Gi
     endpoints:
       - name: 'angular'

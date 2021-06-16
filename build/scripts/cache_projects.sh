@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (c) 2018-2020 Red Hat, Inc.
+# Copyright (c) 2018-2021 Red Hat, Inc.
 # This program and the accompanying materials are made
 # available under the terms of the Eclipse Public License 2.0
 # which is available at https://www.eclipse.org/legal/epl-2.0/
@@ -126,7 +126,7 @@ for devfile in "${devfiles[@]}"; do
     location=$(echo "$project" | jq -r '.source.location')
     branch=$(echo "$project" | jq -r '.source.branch')
     if [[ ! "$branch" ]] || [[ "$branch" == "null" ]]; then
-      branch="master"
+      branch=$(git ls-remote --symref "$location" HEAD | sed -nE 's|^ref: refs/heads/(\S+)\s+HEAD|\1|p')
     fi
     commitId=$(echo "$project" | jq -r '.source.commitId')
     sparse_checkout_dir=$(echo "$project" | jq -r '.source.sparseCheckoutDir')

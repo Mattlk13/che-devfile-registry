@@ -12,15 +12,13 @@ components:
 -
   type: chePlugin
   id: bmewburn/vscode-intelephense-client/latest
-  memoryLimit: 1Gi
 -
   type: chePlugin
   id: felixfbecker/php-debug/latest
-  memoryLimit: 256Mi
 -
   type: dockerimage
   alias: php
-  image: quay.io/eclipse/che-php-7:nightly
+  image: quay.io/eclipse/che-php-7:next
   memoryLimit: 512Mi
   mountSources: true
   endpoints:

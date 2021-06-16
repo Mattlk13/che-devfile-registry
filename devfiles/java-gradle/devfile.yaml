@@ -7,7 +7,7 @@ projects:
     name: console-java-simple
     source:
       type: git
-      location: "https://github.com/che-samples/console-java-simple.git"
+      location: "https://github.com/che-samples/console-java-simple"
       branch: java1.11
 components:
   -
@@ -18,7 +18,7 @@ components:
   -
     type: dockerimage
     alias: gradle
-    image: quay.io/eclipse/che-java11-gradle:nightly
+    image: quay.io/eclipse/che-java11-gradle:next
     env:
       - name: GRADLE_USER_HOME
         value: /home/gradle/.gradle

@@ -7,13 +7,12 @@ projects:
     name: nodejs-web-app
     source:
       type: git
-      location: "https://github.com/che-samples/web-nodejs-sample.git"
+      location: "https://github.com/che-samples/web-nodejs-sample"
 components:
   -
     type: chePlugin
     id: che-incubator/typescript/latest
-    memoryLimit: 512Mi
-  - 
+  -
     type: chePlugin
     id: ms-vscode/node-debug2/latest
     preferences:
@@ -21,7 +20,7 @@ components:
   -
     type: dockerimage
     alias: nodejs
-    image: quay.io/eclipse/che-nodejs10-ubi:nightly
+    image: quay.io/eclipse/che-nodejs10-ubi:next
     memoryLimit: 512Mi
     endpoints:
       - name: 'nodejs'

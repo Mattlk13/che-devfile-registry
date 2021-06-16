@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2020 Red Hat, Inc.
+# Copyright (c) 2018-2021 Red Hat, Inc.
 # This program and the accompanying materials are made
 # available under the terms of the Eclipse Public License 2.0
 # which is available at https://www.eclipse.org/legal/epl-2.0/
@@ -12,7 +12,7 @@
 
 # Builder: check meta.yamls and create index.json
 # https://access.redhat.com/containers/?tab=tags#/registry.access.redhat.com/ubi8-minimal
-FROM registry.access.redhat.com/ubi8-minimal:8.2-267 as builder
+FROM registry.access.redhat.com/ubi8-minimal:8.4-200 as builder
 USER 0
 
 ################# 
@@ -51,7 +51,7 @@ WORKDIR /build/
 # will be rewritten during build to use these values for base images.
 ARG PATCHED_IMAGES_REG="quay.io"
 ARG PATCHED_IMAGES_ORG="eclipse"
-ARG PATCHED_IMAGES_TAG="nightly"
+ARG PATCHED_IMAGES_TAG="next"
 RUN TAG=${PATCHED_IMAGES_TAG} \
     ORGANIZATION=${PATCHED_IMAGES_ORG} \
     REGISTRY=${PATCHED_IMAGES_REG} \
@@ -67,13 +67,8 @@ RUN chmod -R g+rwX /build/devfiles
 ################# 
 
 # Build registry, copying meta.yamls and index.json from builder
-# UPSTREAM: use RHEL7/RHSCL/httpd image so we're not required to authenticate with registry.redhat.io
-# https://access.redhat.com/containers/?tab=tags#/registry.access.redhat.com/rhscl/httpd-24-rhel7
-FROM registry.access.redhat.com/rhscl/httpd-24-rhel7:2.4-114 AS registry
-
-# DOWNSTREAM: use RHEL8/httpd
-# https://access.redhat.com/containers/?tab=tags#/registry.access.redhat.com/rhel8/httpd-24
-# FROM registry.redhat.io/rhel8/httpd-24:1-92 AS registry
+# https://access.redhat.com/containers/?tab=tags#/registry.access.redhat.com/ubi8/httpd-24
+FROM registry.access.redhat.com/ubi8/httpd-24:1-140 AS registry
 USER 0
 
 # latest httpd container doesn't include ssl cert, so generate one

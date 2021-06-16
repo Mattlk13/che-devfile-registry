@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2020 Red Hat, Inc.
+# Copyright (c) 2018-2021 Red Hat, Inc.
 # This program and the accompanying materials are made
 # available under the terms of the Eclipse Public License 2.0
 # which is available at https://www.eclipse.org/legal/epl-2.0/
@@ -15,10 +15,13 @@ objects:
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
+    name: che-devfile-registry
     labels:
       app: che
       component: devfile-registry
-    name: devfile-registry
+      app.kubernetes.io/name: che
+      app.kubernetes.io/instance: che
+      app.kubernetes.io/component: devfile-registry
   spec:
     replicas: 1
     selector:
@@ -37,11 +40,14 @@ objects:
         labels:
           app: che
           component: devfile-registry
+          app.kubernetes.io/name: che
+          app.kubernetes.io/instance: che
+          app.kubernetes.io/component: devfile-registry
       spec:
         containers:
         - image: ${IMAGE}:${IMAGE_TAG}
           imagePullPolicy: "${PULL_POLICY}"
-          name: devfile-registry
+          name: che-devfile-registry
           ports:
           - containerPort: 8080
           livenessProbe:
@@ -58,23 +64,31 @@ objects:
             initialDelaySeconds: 3
             periodSeconds: 10
             timeoutSeconds: 3
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
           resources:
             requests:
-              cpu: 1m
-              memory: 5Mi
-            limits:
               cpu: 100m
+              memory: 32Mi
+            limits:
+              cpu: 500m
               memory: ${MEMORY_LIMIT}
           envFrom:
           - configMapRef:
-              name: devfile-registry
+              name: che-devfile-registry
               optional: true
     triggers:
     - type: ConfigChange
 - apiVersion: v1
   kind: Service
   metadata:
-    name: devfile-registry
+    name: che-devfile-registry
+    labels:
+      app.kubernetes.io/name: che
+      app.kubernetes.io/instance: che
+      app.kubernetes.io/component: devfile-registry
   spec:
     ports:
       - name: http
@@ -87,14 +101,18 @@ objects:
 - apiVersion: v1
   kind: Route
   metadata:
+    name: che-devfile-registry
     labels:
-      app: che
-      component: devfile-registry
-    name: devfile-registry
+      app.kubernetes.io/name: che
+      app.kubernetes.io/instance: che
+      app.kubernetes.io/component: devfile-registry
   spec:
+    tls:
+      termination:
+        edge
     to:
       kind: Service
-      name: devfile-registry
+      name: che-devfile-registry
       weight: 100
     port:
       targetPort: 8080
@@ -104,7 +122,11 @@ objects:
 - apiVersion: v1
   kind: ConfigMap
   metadata:
-    name: devfile-registry
+    name: che-devfile-registry
+    labels:
+      app.kubernetes.io/name: che
+      app.kubernetes.io/instance: che
+      app.kubernetes.io/component: devfile-registry
   data:
      CHE_DEVFILE_IMAGES_REGISTRY_URL: ${CHE_DEVFILE_IMAGES_REGISTRY_URL}
      CHE_DEVFILE_IMAGES_REGISTRY_ORGANIZATION: ${CHE_DEVFILE_IMAGES_REGISTRY_ORGANIZATION}
@@ -116,9 +138,9 @@ parameters:
   displayName: Eclipse Che devfile registry image
   description: Che devfile registry Docker image. Defaults to quay.io/eclipse/che-devfile-registry
 - name: IMAGE_TAG
-  value: nightly
+  value: next
   displayName: Eclipse Che devfile registry version
-  description: Eclipse Che devfile registry version which defaults to nightly
+  description: Eclipse Che devfile registry version which defaults to next
 - name: MEMORY_LIMIT
   value: 256Mi
   displayName: Memory Limit

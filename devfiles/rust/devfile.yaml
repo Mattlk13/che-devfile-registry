@@ -4,7 +4,7 @@ metadata:
 projects:
   - name: HelloWorld-Rust
     source:
-      location: 'https://github.com/che-samples/helloworld-rust.git'
+      location: 'https://github.com/che-samples/helloworld-rust'
       type: git
       branch: master
 components:
@@ -12,7 +12,7 @@ components:
     memoryLimit: 512Mi
     type: dockerimage
     alias: rust
-    image: quay.io/eclipse/che-rust-1.39:nightly
+    image: quay.io/eclipse/che-rust-1.39:next
   - type: chePlugin
     id: rust-lang/rust/latest
 commands:

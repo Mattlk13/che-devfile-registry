@@ -7,20 +7,18 @@ projects:
   name: crud-php
   source:
     type: git
-    location: "https://github.com/taniarascia/pdo.git"
+    location: "https://github.com/che-samples/php-mysql"
 components:
 -
   type: chePlugin
   id: bmewburn/vscode-intelephense-client/latest
-  memoryLimit: 1Gi
 -
   type: chePlugin
   id: felixfbecker/php-debug/latest
-  memoryLimit: 256Mi
 -
   type: dockerimage
   alias: php
-  image: quay.io/eclipse/che-php-7:nightly
+  image: quay.io/eclipse/che-php-7:next
   memoryLimit: 512Mi
   endpoints:
   - name: '8080-tcp'

@@ -7,16 +7,15 @@ projects:
     name: react-web-app
     source:
       type: git
-      location: "https://github.com/che-samples/react-web-app.git"
+      location: "https://github.com/che-samples/react-web-app"
 components:
   -
     type: chePlugin
     id: che-incubator/typescript/latest
-    memoryLimit: 512Mi
   -
     type: dockerimage
     alias: nodejs
-    image: quay.io/eclipse/che-nodejs12-community:nightly
+    image: quay.io/eclipse/che-nodejs12-community:next
     memoryLimit: 1500Mi
     endpoints:
       - name: 'nodejs'

@@ -7,18 +7,17 @@ projects:
     name: react-redux-realworld-example-app
     source:
       type: git
-      location: "https://github.com/gothinkster/react-redux-realworld-example-app"
+      location: "https://github.com/che-samples/nodejs-react-redux"
 components:
   -
     type: chePlugin
     id: che-incubator/typescript/latest
-    memoryLimit: 512Mi
   -
     type: dockerimage
     alias: nodejs
     # system limit for number of file watchers reached with
     # image: registry.access.redhat.com/ubi8/nodejs-10
-    image: quay.io/eclipse/che-nodejs8-centos:nightly
+    image: quay.io/eclipse/che-nodejs8-centos:next
     memoryLimit: 512Mi
     endpoints:
       - name: 'nodejs'

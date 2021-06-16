@@ -1,7 +1,7 @@
 #!/bin/bash
 # shellcheck disable=SC2046,SC2164,SC2086,SC1090,SC2154
 
-# Copyright (c) 2012-2020 Red Hat, Inc.
+# Copyright (c) 2012-2021 Red Hat, Inc.
 # This program and the accompanying materials are made
 # available under the terms of the Eclipse Public License 2.0
 # which is available at https://www.eclipse.org/legal/epl-2.0/
@@ -30,7 +30,7 @@ function createTestWorkspaceAndRunTest() {
   -e TS_SELENIUM_LOAD_PAGE_TIMEOUT=420000 \
   -e TEST_SUITE="test-all-devfiles" \
   -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
-  quay.io/eclipse/che-e2e:nightly || IS_TESTS_FAILED=true
+  quay.io/eclipse/che-e2e:next || IS_TESTS_FAILED=true
 
   export IS_TESTS_FAILED
 }

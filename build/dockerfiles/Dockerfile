@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2020 Red Hat, Inc.
+# Copyright (c) 2018-2021 Red Hat, Inc.
 # This program and the accompanying materials are made
 # available under the terms of the Eclipse Public License 2.0
 # which is available at https://www.eclipse.org/legal/epl-2.0/
@@ -13,7 +13,7 @@ RUN apk add --no-cache py-pip jq bash wget git skopeo && pip install yq
 # will be rewritten during build to use these values for base images.
 ARG PATCHED_IMAGES_REG="quay.io"
 ARG PATCHED_IMAGES_ORG="eclipse"
-ARG PATCHED_IMAGES_TAG="nightly"
+ARG PATCHED_IMAGES_TAG="next"
 ARG USE_DIGESTS=false
 
 COPY ./build/scripts ./arbitrary-users-patch/base_images /build/

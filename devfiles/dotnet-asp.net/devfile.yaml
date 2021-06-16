@@ -12,15 +12,13 @@ components:
   -
     type: chePlugin
     id: redhat-developer/che-omnisharp-plugin/latest
-    memoryLimit: 1024Mi
   -
     type: chePlugin
     id: redhat-developer/netcoredbg-theia-plugin/latest
-    memoryLimit: 512Mi
   -
     type: dockerimage
     alias: dotnet
-    image: quay.io/eclipse/che-dotnet-2.2:nightly
+    image: quay.io/eclipse/che-dotnet-2.2:next
     env:
       - name: HOME
         value: /home/user

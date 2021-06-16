@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020 Red Hat, Inc.
+# Copyright (c) 2020-2021 Red Hat, Inc.
 # This program and the accompanying materials are made
 # available under the terms of the Eclipse Public License 2.0
 # which is available at https://www.eclipse.org/legal/epl-2.0/
@@ -15,70 +15,101 @@ on:
       version:
         description: 'release version in format 7.y.z'
         required: true
-  push:
-    branches: 
-      - 'release'
-    paths:
-      - 'VERSION'
+      forceRecreateTags:
+        description: If true, tags will be recreated. Use with caution
+        required: false
+        default: 'false'
+      performRelease:
+        description: If true, release will be performed (creating tag, building images)
+        required: false
+        default: 'true'
+      publishDevfilesToGhPages:
+        description: If true, will generate and publish devfiles to GitHub pages
+        required: false
+        default: 'true'
 
 jobs:
-  release-build-publish:
-    runs-on: ubuntu-latest
+  build:
+    name: Create Che Devfile Registry Release
+    runs-on: ubuntu-20.04
     steps:
-      - name: Clone source code
+      -
+        name: "Checkout source code"
         uses: actions/checkout@v2
         with:
-          fetch-depth: 1
-          ref: release
-
-      - name: Prepare
-        id: prep
+          fetch-depth: 0
+      - 
+        name: Check existing tags
+        if: github.event.inputs.performRelease == 'true'
         run: |
-          SHORT_SHA1=$(git rev-parse --short HEAD)
-          echo ::set-output name=short_sha1::${SHORT_SHA1}
-          VERSION=$(head -n 1 VERSION)
-          echo ::set-output name=version::${VERSION}
-          IMAGE=che-devfile-registry
-          echo ::set-output name=image::${IMAGE}
-          PLATFORMS=$(cat PLATFORMS)
-          echo ::set-output name=platforms::${PLATFORMS}
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Set up QEMU
+          set +e
+          RECREATE_TAGS=${{ github.event.inputs.forceRecreateTags }}
+          VERSION=${{ github.event.inputs.version }}
+          EXISTING_TAG=$(git ls-remote --exit-code origin refs/tags/${VERSION})
+          if [[ -n ${EXISTING_TAG} ]]; then
+            if [[ ${RECREATE_TAGS} == "true" ]]; then
+              echo "[INFO] Removing tag for ${VERSION} version. New tag will be recreated during release."
+              git push origin :$VERSION
+            else
+              echo "[ERROR] Cannot proceed with release - tag ${EXISTING_TAG} already exists."
+              exit 1
+            fi
+          else
+            echo "[INFO] No existing tags detected for $VERSION"
+          fi
+      -
+        name: "Set up QEMU"
         uses: docker/setup-qemu-action@v1
-
-      - name: Login to Quay.io
-        uses: azure/docker-login@v1
+      -
+        name: "Set up Docker Buildx"
+        uses: docker/setup-buildx-action@v1
+      -
+        name: "Docker quay.io Login"
+        uses: docker/login-action@v1
         with:
-          login-server: quay.io
+          registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_PASSWORD }}
-
-      - name: Login to Docker Hub
-        uses: azure/docker-login@v1
+      - 
+        name: Login to docker.io
+        uses: docker/login-action@v1
         with:
+          registry: docker.io
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-      - name: Build and push patched base images and happy path image
+      -
+        name: Set up yq
         run: |
-          export TAG=$(head -n 1 VERSION)
-          /bin/bash arbitrary-users-patch/happy-path/build_happy_path_image.sh --push
-          /bin/bash arbitrary-users-patch/build_images.sh --push
+          sudo wget https://github.com/mikefarah/yq/releases/download/v4.7.0/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
+      - 
+        name: Perform a release
+        if: github.event.inputs.performRelease == 'true'
+        run: |
+          git config --global user.name "Mykhailo Kuznietsov"
+          git config --global user.email "mkuznets@redhat.com"
 
-      - name: Build and push images
-        id: docker_build
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./build/dockerfiles/Dockerfile
-          target: registry
-          build-args: |
-            PATCHED_IMAGES_TAG=${{ steps.prep.outputs.version }}
-          platforms: ${{ steps.prep.outputs.platforms }}
-          tags: quay.io/eclipse/${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.version }},quay.io/eclipse/${{ steps.prep.outputs.image }}:${{ steps.prep.outputs.short_sha1 }}
-          push: true
+          export GITHUB_TOKEN=${{ secrets.CHE_BOT_GITHUB_TOKEN }}
+          ./make-release.sh --version ${{ github.event.inputs.version}} --trigger-release
 
+      - name: Generate devfiles with registryUrls and publish to GH pages
+        if: github.event.inputs.publishDevfilesToGhPages == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.CHE_BOT_GITHUB_TOKEN }}
+          VERSION: ${{ github.event.inputs.version}}
+        run: ./.ci/generate_and_publish_registry_url_devfiles.sh
+
+      - name: Create failure MM message
+        if: ${{ failure() }}
+        run: |
+          echo "{\"text\":\":no_entry_sign: Che Devfile Registry ${{ github.event.inputs.version }} release has failed: https://github.com/eclipse-che/che-devfile-registry/actions/workflows/release.yml\"}" > mattermost.json
+      - name: Create success MM message
+        run: |
+          echo "{\"text\":\":white_check_mark: Che Devfile Registry ${{ github.event.inputs.version }} has been released: https://quay.io/eclipse/che-devfile-registry:${{ github.event.inputs.version }}\"}" > mattermost.json
+      - name: Send MM message
+        if: ${{ success() }} || ${{ failure() }}
+        uses: mattermost/action-mattermost-notify@1.0.2
+        env:
+          MATTERMOST_WEBHOOK_URL: ${{ secrets.MATTERMOST_WEBHOOK_URL }}
+          MATTERMOST_CHANNEL: eclipse-che-releases
+          MATTERMOST_USERNAME: che-bot
